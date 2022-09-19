@@ -36,11 +36,24 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	})
 //	Timer
-	const deadline = '2022-09-17'
+	const deadline = '2022-09-18'
 
 	function getTimeRemaining(endTime) {
-		const t = Date.parse(endTime) - new Date(),
-			days = Math.floor(t / (1000 * 60 * 60 * 24)),
+
+		let days, hours, minutes, seconds;
+		const t = Date.parse(endTime) - new Date();
+
+		if (t <= 0) {
+			return {
+				'total': t,
+				days: 0,
+				hours: 0,
+				minutes: 0,
+				seconds: 0
+			}
+		}
+
+		days = Math.floor(t / (1000 * 60 * 60 * 24)),
 			hours = Math.floor((t / (1000 * 60 * 60) % 24)),
 			minutes = Math.floor((t / (1000 * 60) % 60)),
 			seconds = Math.floor((t / 1000 % 60))
