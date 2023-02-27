@@ -210,7 +210,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const forms = document.querySelectorAll('form')
 	const message = {
-		loading: 'Загрузка',
+		loading: 'img/form/spinner.svg',
 		success: 'Спасибо,мы с Вами скоро свяжемся',
 		failure: 'Что-то пошло не так...'
 
@@ -225,9 +225,12 @@ window.addEventListener('DOMContentLoaded', () => {
 			e.preventDefault()
 
 			const statusMessage = document.createElement('img')
-			statusMessage.classList.add('status')
-			statusMessage.textContent = message.loading
-			form.append(statusMessage)
+			statusMessage.src = message.loading
+			statusMessage.style.cssText = `
+                display: block;
+                margin: 0 auto;
+            `;
+			form.insertAdjacentElement('afterend', statusMessage)
 
 			const request = new XMLHttpRequest()
 			request.open("POST", 'server.php')
