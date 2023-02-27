@@ -28,7 +28,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		const target = event.target
 		if (target && target.classList.contains('tabheader__item')) {
 			tabs.forEach((tab, i) => {
-				if (target == tab) {
+				if (target === tab) {
 					hideTabContent();
 					showTabContent(i)
 				}
@@ -99,23 +99,28 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	//Modal
 	const showModalBtn = document.querySelectorAll('[data-modal]'),
-		closeModalBtn = document.querySelector('[data-close]'),
 		modal = document.querySelector('.modal')
 
-	const closeModal = () => {
-		modal.style.display = 'none'
-		document.body.style.overflow = ''
-	}
-	const showModal = () => {
-		modal.style.display = 'block'
+	function showModal(){
+		modal.classList.add('show');
+		modal.classList.remove('hide');
 		document.body.style.overflow = 'hidden'
 		clearInterval(timerModal)
 	}
+
 	showModalBtn.forEach((btn) => btn.addEventListener('click', showModal))
 
-	closeModalBtn.addEventListener('click', closeModal)
+	function closeModal(){
+		modal.classList.add('hide');
+		modal.classList.remove('show');
+		document.body.style.overflow = ''
+	}
+
+
+
+
 	modal.addEventListener('click', (e) => {
-		if (e.target === modal) {
+		if (e.target === modal || e.target.getAttribute('data-close') === "") {
 			closeModal()
 		}
 	})
@@ -125,7 +130,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	})
 
-	// const timerModal = setTimeout(showModal, 5000)
+	const timerModal = setTimeout(showModal, 50000)
 
 	const showModalByScroll = () => {
 		if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 1) {
@@ -137,7 +142,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	window.addEventListener('scroll', showModalByScroll)
 
 	class MenuCard {
-		constructor(src, alt, title, descr, price, parentSelector,...classes) {
+		constructor(src, alt, title, descr, price, parentSelector, ...classes) {
 			this.src = src
 			this.alt = alt
 			this.title = title
@@ -155,11 +160,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 		render() {
 			const element = document.createElement('div')
-			if(!this.classes.length){
-				this.element='menu__item'
+			if (!this.classes.length) {
+				this.element = 'menu__item'
 				element.classList.add(this.element)
-			}else{
-				this.classes.forEach(className=>element.classList.add(className))
+			} else {
+				this.classes.forEach(className => element.classList.add(className))
 			}
 			element.innerHTML = `
 						<img src=${this.src} alt=${this.alt}>
@@ -202,5 +207,75 @@ window.addEventListener('DOMContentLoaded', () => {
 		".menu .container",
 		"menu__item"
 	).render()
+
+	const forms = document.querySelectorAll('form')
+	const message = {
+		loading: 'Загрузка',
+		success: 'Спасибо,мы с Вами скоро свяжемся',
+		failure: 'Что-то пошло не так...'
+
+	}
+
+	forms.forEach(item => {
+		postData(item)
+	})
+
+	function postData(form) {
+		form.addEventListener('submit', (e) => {
+			e.preventDefault()
+
+			const statusMessage = document.createElement('img')
+			statusMessage.classList.add('status')
+			statusMessage.textContent = message.loading
+			form.append(statusMessage)
+
+			const request = new XMLHttpRequest()
+			request.open("POST", 'server.php')
+			// request.setRequestHeader('Content-type', 'multipart-data')
+			request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+			const formData = new FormData(form)
+			const object = {}
+			formData.forEach((value, key) => {
+				object[key] = value
+			})
+
+			const json = JSON.stringify(object)
+
+			request.send(json)
+
+			request.addEventListener('load', () => {
+				if (request.status === 200) {
+					console.log(request.response)
+					showThanksModal(message.success)
+					form.reset()
+						statusMessage.remove()
+				} else {
+				showThanksModal(message.failure)
+				}
+			})
+		})
+	}
+
+	function showThanksModal(message) {
+		const prevModalDialogs = document.querySelector('.modal__dialog')
+		prevModalDialogs.classList.add('hide')
+		showModal()
+
+		const thanksModal = document.createElement('div')
+		thanksModal.classList.add('modal__dialog')
+		thanksModal.innerHTML = `
+		<div class = "modal__content">
+			<div class = "modal__close" data-close>&times;</div>
+			<div class = "modal__title">${message}</div>
+		</div>`
+		document.querySelector('.modal').append(thanksModal)
+		setTimeout(() => {
+			thanksModal.remove()
+			prevModalDialogs.classList.add('show')
+			prevModalDialogs.classList.remove('hide')
+			closeModal()
+		}, 4000)
+	}
 })
 
